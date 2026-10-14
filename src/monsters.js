@@ -311,7 +311,7 @@ export class Wasp extends Monster {
     }
     this.group.position.set(x, rand(2.5, 5), rand(-0.3, 0.3));
     this.state = 'hover';
-    this.diveT = rand(2, 5);
+    this.diveT = rand(3, 6);
     this.addHit(thorax, 0.45);
     this.addHit(abd, 0.42);
     if (i === 0) game.audio.sfx('buzz');
@@ -323,26 +323,40 @@ export class Wasp extends Monster {
     if (!this.alive) return;
     const g = this.game, p = g.player, pos = this.group.position;
     let tx, ty, maxV, lam;
+    // Hornets hover at 3 u/s and dive at 4 u/s; the archer walks at 4.6, so running away works.
     if (this.state === 'hover') {
-      tx = p.x + this.side * (2.6 + Math.sin(this.t * 0.9 + this.seed) * 1.6);
+      tx = p.x + this.side * (2.8 + Math.sin(this.t * 0.9 + this.seed) * 1.6);
       ty = 2.7 + Math.sin(this.t * 2.1 + this.seed) * 1.1;
-      maxV = 4.5 * g.spdMul;
-      lam = 3;
+      maxV = 3.0 * g.spdMul;
+      lam = 2.5;
+      this.diveT -= dt;
+      if (this.diveT <= 0) {
+        this.state = 'windup';
+        this.diveT = 0.5;
+        g.audio.sfx('buzz');
+      }
+    } else if (this.state === 'windup') {
+      // Short hesitation before the dive, so the player sees it coming.
+      tx = pos.x;
+      ty = pos.y + 0.3;
+      maxV = 0.6;
+      lam = 6;
+      this.rig.position.x = Math.sin(this.t * 60) * 0.04;
       this.diveT -= dt;
       if (this.diveT <= 0) {
         this.state = 'dive';
-        this.diveT = 1.3;
-        g.audio.sfx('buzz');
+        this.diveT = 1.1;
+        this.rig.position.x = 0;
       }
     } else {
       tx = p.x;
       ty = 0.9;
-      maxV = 8 * g.spdMul;
-      lam = 6;
+      maxV = 4.0 * g.spdMul;
+      lam = 4;
       this.diveT -= dt;
       if (this.diveT <= 0) {
         this.state = 'hover';
-        this.diveT = rand(2.5, 5.5);
+        this.diveT = rand(3, 6);
         this.side = Math.random() < 0.5 ? 1 : -1;
       }
     }

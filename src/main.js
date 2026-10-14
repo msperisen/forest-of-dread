@@ -91,6 +91,15 @@ class Game {
     this.paused = false;
 
     $('title').addEventListener('pointerdown', () => this.input.pressed.add('Pointer'));
+    // Unlock audio inside the gesture itself (iOS refuses to start it later from the game loop).
+    // touchend and pointerup are the events iOS counts as a user activation for taps.
+    const unlock = () => this.audio.init();
+    for (const ev of ['pointerdown', 'pointerup', 'touchend', 'mousedown', 'keydown']) {
+      addEventListener(ev, unlock, { capture: true, passive: true });
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !this.paused && this.audio.ctx) this.audio.ctx.resume().catch(() => {});
+    });
     $('title-hi').textContent = this.hi ? `HI SCORE ${pad(this.hi)}` : '';
     addEventListener('resize', () => this.resize());
     // Phones: rotation and Safari's collapsing toolbar change the size without always

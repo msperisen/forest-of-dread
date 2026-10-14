@@ -41,14 +41,27 @@ export class Sound {
     this.stepDur = 60 / SONG.bpm / 4;
   }
 
+  // Must be called from inside a user gesture (tap, click, key press): iOS only lets
+  // audio start there. Safe to call repeatedly.
   init() {
     if (this.ctx) {
-      if (this.ctx.state === 'suspended') this.ctx.resume();
+      // iOS reports 'interrupted' after calls, Siri or switching apps.
+      if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
       return;
     }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
+    // Play through the iPhone's silent switch, like a game or video (Safari 17+).
+    try {
+      if (navigator.audioSession) navigator.audioSession.type = 'playback';
+    } catch { /* not supported */ }
     const ctx = (this.ctx = new AC());
+    ctx.resume?.().catch(() => {});
+    // Older iOS versions only unlock after a sound actually starts in the gesture.
+    const silent = ctx.createBufferSource();
+    silent.buffer = ctx.createBuffer(1, 1, 22050);
+    silent.connect(ctx.destination);
+    silent.start(0);
 
     this.out = ctx.createGain();
     this.out.gain.value = this.muted ? 0 : 0.75;
