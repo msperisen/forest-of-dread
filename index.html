@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#000000" />
+  <title>Forest of Dread</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="game"></div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+
+  <div id="hud" class="hidden">
+    <div class="row">
+      <div id="score">SCORE 000000</div>
+      <div id="level"></div>
+      <div id="hi">HI 000000</div>
+    </div>
+    <div id="lives"></div>
+  </div>
+
+  <div id="banner" class="hidden"><h2></h2><p></p></div>
+
+  <div id="title">
+    <h1>FOREST<br />OF DREAD</h1>
+    <p class="sub">a 2.5D tribute to a Commodore 64 classic from 1983</p>
+    <p class="blink desktop-only">PRESS SPACE, ENTER OR CLICK</p>
+    <p class="blink touch-only">TAP TO START</p>
+    <div class="controls touch-only">
+      <div><b>Left thumb</b> drag sideways to walk</div>
+      <div>drag up / down to aim the bow</div>
+      <div><b>Right thumb</b> FIRE (hold for rapid fire)</div>
+      <div class="pad">Landscape works best</div>
+    </div>
+    <div class="controls desktop-only">
+      <div><b>← →</b> or <b>A D</b> walk</div>
+      <div><b>↑ ↓</b> or <b>W S</b> aim the bow</div>
+      <div><b>SPACE</b> shoot (hold for rapid fire)</div>
+      <div><b>P</b> pause · <b>M</b> mute</div>
+      <div class="pad">Gamepads work too</div>
+    </div>
+    <p id="title-hi"></p>
+  </div>
+
+  <div id="pause" class="hidden">PAUSED</div>
+  <div id="rotate">Turn your device sideways for a wider view</div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
