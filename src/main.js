@@ -93,6 +93,10 @@ class Game {
     $('title').addEventListener('pointerdown', () => this.input.pressed.add('Pointer'));
     $('title-hi').textContent = this.hi ? `HI SCORE ${pad(this.hi)}` : '';
     addEventListener('resize', () => this.resize());
+    // Phones: rotation and Safari's collapsing toolbar change the size without always
+    // firing a plain resize, so listen to the visual viewport too.
+    visualViewport?.addEventListener('resize', () => this.resize());
+    addEventListener('orientationchange', () => setTimeout(() => this.resize(), 250));
     this.resize();
 
     this.last = performance.now();
@@ -101,9 +105,19 @@ class Game {
 
   resize() {
     const w = innerWidth, h = innerHeight;
-    this.renderer.setSize(w, h);
+    if (w === this.w && h === this.h) return;
+    this.w = w;
+    this.h = h;
+    // CSS keeps the canvas at 100% of the window; only the drawing buffer is resized here.
+    this.renderer.setSize(w, h, false);
     this.composer.setSize(w, h);
     this.camera.aspect = w / h;
+    // Keep at least the horizontal view of a 3:2 screen, so portrait phones don't
+    // end up zoomed in on a few metres of forest.
+    const minAspect = 1.5;
+    const baseTan = Math.tan(THREE.MathUtils.degToRad(19));
+    const tan = baseTan * Math.max(1, minAspect / this.camera.aspect);
+    this.camera.fov = Math.min(75, THREE.MathUtils.radToDeg(2 * Math.atan(tan)));
     this.camera.updateProjectionMatrix();
     const pr = this.renderer.getPixelRatio();
     this.fx.setScale((h * pr) / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))));

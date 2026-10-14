@@ -94,8 +94,18 @@ export function setupTouch(input) {
   tap('.pause-btn', 'KeyP');
   tap('.mute-btn', 'KeyM');
 
-  // No long-press menus, double-tap zoom or text selection.
+  // No long-press menus, text selection, double-tap zoom or pinch zoom. iOS Safari ignores
+  // user-scalable=no, so the touch and gesture events themselves have to be cancelled.
   addEventListener('contextmenu', (e) => e.preventDefault());
+  const block = (e) => e.preventDefault();
+  for (const ev of ['touchstart', 'touchmove', 'touchend']) {
+    document.addEventListener(ev, (e) => {
+      if (e.touches.length > 1 || ev !== 'touchstart' || e.target.closest('#touch')) block(e);
+    }, { passive: false });
+  }
+  for (const ev of ['gesturestart', 'gesturechange', 'gestureend', 'dblclick']) {
+    document.addEventListener(ev, block, { passive: false });
+  }
   addEventListener('blur', restStick);
   return true;
 }

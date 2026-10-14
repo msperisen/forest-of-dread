@@ -86,38 +86,49 @@ function groundTexture() {
   return t;
 }
 
-function pathTexture() {
-  const t = canvasTexture(256, 128, (g, w, h) => {
-    const grad = g.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, 'rgba(92,72,48,0)');
-    grad.addColorStop(0.25, 'rgba(92,72,48,0.9)');
-    grad.addColorStop(0.75, 'rgba(92,72,48,0.9)');
-    grad.addColorStop(1, 'rgba(92,72,48,0)');
-    g.fillStyle = grad;
+// Safari keeps canvas pixels premultiplied, so nearly transparent pixels lose their
+// colour and show up as rainbow speckles. Soft-edged textures are therefore drawn fully
+// opaque: colour in one canvas, transparency as greyscale in another (used as alphaMap).
+function pathTextures() {
+  const map = canvasTexture(256, 128, (g, w, h) => {
+    g.fillStyle = '#5c4830';
     g.fillRect(0, 0, w, h);
     for (let i = 0; i < 400; i++) {
       const y = h * (0.2 + Math.random() * 0.6);
-      g.fillStyle = pick(['rgba(60,45,30,0.6)', 'rgba(130,110,80,0.5)', 'rgba(40,30,20,0.5)']);
+      g.fillStyle = pick(['#3c2d1e', '#82704f', '#2a1f14']);
       g.fillRect(Math.random() * w, y, 1 + Math.random() * 4, 1 + Math.random() * 3);
     }
   });
-  t.wrapS = THREE.RepeatWrapping;
-  return t;
+  const alpha = canvasTexture(4, 128, (g, w, h) => {
+    const grad = g.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#000');
+    grad.addColorStop(0.25, '#e6e6e6');
+    grad.addColorStop(0.75, '#e6e6e6');
+    grad.addColorStop(1, '#000');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+  }, false);
+  map.wrapS = alpha.wrapS = THREE.RepeatWrapping;
+  return { map, alpha };
 }
 
+// Greyscale mist density on black, used as an alphaMap (see pathTextures).
 function mistTexture() {
   const t = canvasTexture(512, 128, (g, w, h) => {
+    g.fillStyle = '#000';
+    g.fillRect(0, 0, w, h);
+    g.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 90; i++) {
       const x = Math.random() * w, y = h * (0.35 + Math.random() * 0.4), r = 20 + Math.random() * 60;
       for (const ox of [-w, 0, w]) {
         const gr = g.createRadialGradient(x + ox, y, 0, x + ox, y, r);
-        gr.addColorStop(0, 'rgba(255,255,255,0.32)');
-        gr.addColorStop(1, 'rgba(255,255,255,0)');
+        gr.addColorStop(0, 'rgb(82,82,82)');
+        gr.addColorStop(1, 'rgb(0,0,0)');
         g.fillStyle = gr;
         g.fillRect(x + ox - r, y - r, r * 2, r * 2);
       }
     }
-  });
+  }, false);
   t.wrapS = THREE.RepeatWrapping;
   return t;
 }
@@ -125,18 +136,20 @@ function mistTexture() {
 function orbTexture(kind) {
   return canvasTexture(256, 256, (g, w) => {
     const c = w / 2;
+    g.fillStyle = '#000'; // opaque: drawn with additive blending, black adds nothing
+    g.fillRect(0, 0, w, w);
     const glow = g.createRadialGradient(c, c, 0, c, c, c);
     if (kind === 'sun') {
-      glow.addColorStop(0, 'rgba(255,250,230,1)');
-      glow.addColorStop(0.12, 'rgba(255,240,200,1)');
-      glow.addColorStop(0.2, 'rgba(255,210,140,0.45)');
-      glow.addColorStop(1, 'rgba(255,180,100,0)');
+      glow.addColorStop(0, 'rgb(255,250,230)');
+      glow.addColorStop(0.12, 'rgb(255,240,200)');
+      glow.addColorStop(0.2, 'rgb(115,95,63)');
+      glow.addColorStop(1, 'rgb(0,0,0)');
       g.fillStyle = glow;
       g.fillRect(0, 0, w, w);
       return;
     }
-    glow.addColorStop(0.15, 'rgba(200,215,255,0.5)');
-    glow.addColorStop(1, 'rgba(120,140,220,0)');
+    glow.addColorStop(0.15, 'rgb(70,78,100)');
+    glow.addColorStop(1, 'rgb(0,0,0)');
     g.fillStyle = glow;
     g.fillRect(0, 0, w, w);
     g.fillStyle = '#eef0e4';
@@ -144,7 +157,7 @@ function orbTexture(kind) {
     g.arc(c, c, w * 0.14, 0, Math.PI * 2);
     g.fill();
     for (let i = 0; i < 9; i++) {
-      g.fillStyle = 'rgba(150,150,140,0.45)';
+      g.fillStyle = 'rgb(200,200,190)';
       g.beginPath();
       const a = Math.random() * 6.28, d = Math.random() * w * 0.1;
       g.arc(c + Math.cos(a) * d, c + Math.sin(a) * d, 2 + Math.random() * 6, 0, Math.PI * 2);
@@ -318,7 +331,7 @@ export class Forest {
 
     this.sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: orbTexture('sun'), fog: false, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.sunSprite.scale.setScalar(70);
-    this.moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: orbTexture('moon'), fog: false, transparent: true, depthWrite: false }));
+    this.moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: orbTexture('moon'), fog: false, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.moonSprite.scale.setScalar(60);
     this.scene.add(this.sunSprite, this.moonSprite);
   }
@@ -350,11 +363,12 @@ export class Forest {
     this.ground.receiveShadow = true;
     this.scene.add(this.ground);
 
-    const pt = pathTexture();
-    pt.repeat.set(60, 1);
+    const pt = pathTextures();
+    pt.map.repeat.set(60, 1);
+    pt.alpha.repeat.set(60, 1);
     this.path = new THREE.Mesh(
       new THREE.PlaneGeometry(600, 3.4),
-      new THREE.MeshStandardMaterial({ map: pt, transparent: true, roughness: 1, depthWrite: false }),
+      new THREE.MeshStandardMaterial({ map: pt.map, alphaMap: pt.alpha, transparent: true, roughness: 1, depthWrite: false }),
     );
     this.path.rotation.x = -Math.PI / 2;
     this.path.position.set(0, 0.01, 0.2);
@@ -496,7 +510,7 @@ export class Forest {
       const tex = base.clone();
       tex.needsUpdate = true;
       tex.repeat.set(3, 1);
-      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.3 });
+      const mat = new THREE.MeshBasicMaterial({ alphaMap: tex, transparent: true, depthWrite: false, opacity: 0.3 });
       const m = new THREE.Mesh(new THREE.PlaneGeometry(300, 9 + i * 3), mat);
       m.position.set(0, 2.5 + i * 1.2, z);
       m.userData = { drift: (i % 2 ? 1 : -1) * (0.004 + i * 0.002), k: 1 - i * 0.12 };
@@ -655,7 +669,7 @@ export class Forest {
 
     for (const m of this.mists) {
       m.position.x = camX;
-      m.material.map.offset.x = (camX / 300) * 3 + this.time * m.userData.drift;
+      m.material.alphaMap.offset.x = (camX / 300) * 3 + this.time * m.userData.drift;
       m.material.color.copy(P.fog).lerp(new THREE.Color(1, 1, 1), 0.25 + fl * 0.3);
       m.material.opacity = P.mist * m.userData.k * (1 + rain * 0.3);
     }
