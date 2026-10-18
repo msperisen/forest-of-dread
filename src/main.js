@@ -17,6 +17,7 @@ import './style.css';
 
 const $ = (id) => document.getElementById(id);
 const HI_KEY = 'forest-of-dread-hi';
+const MAX_LIVES = 5;
 
 function loadHi() {
   try { return +localStorage.getItem(HI_KEY) || 0; } catch { return 0; }
@@ -142,6 +143,7 @@ class Game {
     this.lives = 3;
     this.levelIdx = START_LEVEL;
     this.loop = 0;
+    this.cleared = 0;
     this.hpMul = 1;
     this.spdMul = 1;
     this.player.reset(this.camX);
@@ -233,7 +235,19 @@ class Game {
 
   levelClear() {
     this.setState('clear');
-    this.banner('The forest falls silent', '... for now');
+    // One extra life for every second level cleared (counted across night cycles).
+    this.cleared++;
+    let sub = '... for now';
+    if (this.cleared % 2 === 0) {
+      if (this.lives < MAX_LIVES) {
+        this.lives++;
+        sub = '... for now<br><br>♥ Extra life ♥';
+      } else {
+        sub = '... for now<br><br>♥ Lives full: bonus 1000 ♥';
+        this.score += 1000 * (1 + this.loop);
+      }
+    }
+    this.banner('The forest falls silent', sub);
     this.audio.jingle('clear');
     this.score += 500 * (this.levelIdx + 1) * (1 + this.loop);
     this.updateHud();
@@ -246,7 +260,6 @@ class Game {
       this.loop++;
       this.hpMul = 1 + this.loop * 0.5;
       this.spdMul = 1 + this.loop * 0.15;
-      this.lives = Math.min(5, this.lives + 1);
     }
     this.startLevel();
   }

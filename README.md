@@ -54,8 +54,9 @@ In the browser console, `game.god = true` makes the archer invulnerable (for tes
 6. **The Restless Dead**: skeletons claw their way out of the earth (rainy night)
 7. **The Horned Shade**: a towering demon that is only fully visible in lightning flashes (storm)
 
-After level 7 the forest starts again at midday. Creatures get tougher and faster, and every
-night cycle gives one extra life (up to 5).
+You get one extra life for every two levels you clear (up to 5 lives; with full lives you get
+1000 bonus points instead). After level 7 the forest starts again at midday, and the creatures
+get tougher and faster.
 
 ## About the music
 
