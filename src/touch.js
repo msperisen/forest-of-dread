@@ -107,6 +107,26 @@ export function setupTouch(input) {
     document.addEventListener(ev, block, { passive: false });
   }
   addEventListener('blur', restStick);
+
+  // Show the controls while the screen is being used, fade them out after 5 s without
+  // a touch, and hide them as soon as a gamepad is used. Faded controls stay active,
+  // so the first touch already walks or fires.
+  const HIDE_AFTER = 5000;
+  let touchedAt = performance.now();
+  const show = () => {
+    touchedAt = performance.now();
+    document.body.classList.add('controls-on');
+  };
+  document.addEventListener('pointerdown', show, { capture: true, passive: true });
+  document.addEventListener('touchstart', show, { capture: true, passive: true });
+  setInterval(() => {
+    const now = performance.now();
+    const fingerDown = stickId !== null || fireId !== null;
+    if (fingerDown) touchedAt = now;
+    const padNewer = input.gpUsedAt > touchedAt;
+    if (padNewer || now - touchedAt > HIDE_AFTER) document.body.classList.remove('controls-on');
+  }, 200);
+  show();
   return true;
 }
 

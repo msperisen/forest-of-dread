@@ -81,8 +81,9 @@ html, body {
 body.touch .touch-only { display: block; }
 body.touch .desktop-only { display: none; }
 
-#touch { display: none; }
+#touch { display: none; opacity: 0; transition: opacity 0.6s; }
 body.touch.playing #touch { display: block; }
+body.touch.controls-on #touch { opacity: 1; transition: opacity 0.15s; }
 
 .stick-zone {
   position: fixed; left: 0; bottom: 0; width: 50%; height: 75%; z-index: 5;

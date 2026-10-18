@@ -8,6 +8,7 @@ export class Input {
     this.gp = { x: 0, y: 0, fire: false };
     this.gpPrev = { fire: false, start: false };
     this.touch = { x: 0, y: 0, fire: false }; // written by touch.js
+    this.gpUsedAt = 0;
     addEventListener('keydown', (e) => {
       if (BLOCK.has(e.code)) e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
@@ -34,6 +35,10 @@ export class Input {
     if (b(13)) y = 1;
     const fire = b(0) || b(2) || b(7);
     const start = b(9);
+    // Remember when the gamepad was last used (touch.js hides the on-screen controls then).
+    if (fire || start || Math.abs(x) > 0.4 || Math.abs(y) > 0.4 || gp.buttons.some((bt) => bt.pressed)) {
+      this.gpUsedAt = performance.now();
+    }
     if (fire && !this.gpPrev.fire) this.pressed.add('GPFire');
     if (start && !this.gpPrev.start) this.pressed.add('GPStart');
     this.gpPrev = { fire, start };

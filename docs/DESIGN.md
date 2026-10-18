@@ -77,7 +77,10 @@ level entry.
 a gamepad: |x| > 0.35 walks and |y| > 0.45 aims, so a diagonal walks and aims at once. Each
 control tracks its own pointer id, so you can walk and shoot at the same time. A tap on FIRE
 counts even if it's shorter than a frame, and it's buffered for 0.3 s while the bow is still
-drawing. On touch devices the render resolution is lower and the shadow map is smaller, to keep
+drawing. The controls are shown on any touch and fade out after 5 s without one (never while a
+finger is on the stick or FIRE). `Input.poll` records when a gamepad was last used
+(`gpUsedAt`), and the controls hide as soon as that is newer than the last touch. Faded
+controls keep receiving input, so the first touch already acts. On touch devices the render resolution is lower and the shadow map is smaller, to keep
 the frame rate up.
 
 ## Audio

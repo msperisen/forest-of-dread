@@ -39,6 +39,9 @@ Every push to `main` is built and published to GitHub Pages by `.github/workflow
 - **Right:** the FIRE button (hold it for rapid fire).
 - **Top right:** pause and mute.
 
+The on-screen controls appear when you touch the screen and fade out after 5 seconds without a
+touch. With a gamepad connected to the phone or tablet, they hide as soon as you use it.
+
 Landscape works best. On Android, the game switches to fullscreen when you start.
 
 `?level=N` in the URL starts at level N (1 to 7) for practice.
